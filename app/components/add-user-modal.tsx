@@ -1,30 +1,40 @@
 'use client'
 
 import {Button} from '@/components/button'
-import {Dialog, DialogActions, DialogBody, DialogDescription, DialogTitle} from '@/components/dialog'
+import {Dialog, DialogActions, DialogBody,  DialogTitle} from '@/components/dialog'
 import {Field, Label} from '@/components/fieldset'
 import {Input} from '@/components/input'
-import React, {useState} from 'react'
-import {addUser, IAddUserResponse} from "@/app/actions";
+import React, {useEffect, useState} from 'react'
+import {addUser} from "@/app/actions";
+import { useFormState } from 'react-dom'
+import toast from "react-hot-toast";
 import AddButton from "@/app/components/add-button";
-import {useFormState} from 'react-dom'
 
-const initialState: IAddUserResponse = {
+
+export interface IAddUserResponse {
+    isSuccess?: boolean
+    isError?: boolean
+    message: string
+}
+
+export const initialState: IAddUserResponse = {
     message: '',
 }
 
 export default function AddUserModal() {
-    let [isOpen, setIsOpen] = useState(false)
-    const [state, formAction] = useFormState(addUser, initialState)
+    const [isOpen, setIsOpen] = useState(false)
+    const [state, formAction] = useFormState<IAddUserResponse, FormData>(addUser, initialState)
 
-    const ref = React.useRef<HTMLFormElement>(null)
-
-    React.useEffect(() => {
-        if (state.isSuccessful) {
-            ref.current?.reset()
+    useEffect(() => {
+        if (state.isSuccess) {
             setIsOpen(false)
+            toast.success(state.message)
         }
-    }, [state])
+
+        if (state.isError) {
+            toast.error(state.message)
+        }
+    },[state])
 
     return (
         <>
@@ -32,20 +42,11 @@ export default function AddUserModal() {
                 Add User
             </Button>
 
-            <p>{state?.message}</p>
-
             <Dialog open={isOpen} onClose={setIsOpen}>
-                <form ref={ref} action={(formData) => {
-                    formAction(formData)
-                }}>
+                <form action={formAction}>
                     <DialogTitle>Add new user</DialogTitle>
-                    <DialogDescription>
-                        Add a new user to your organization. They will receive an email invitation to join your
-                        organization.
-                    </DialogDescription>
                     <DialogBody>
-                        <p className={'text-red-500'}>{state.error}</p>
-                        <div className={'grid grid-cols-2 gap-x-5 gap-y-5'}>
+                        <div className={'flex flex-col gap-y-5'}>
                             <Field>
                                 <Label>Name</Label>
                                 <Input required name="name" placeholder={'Enter user name'}/>
@@ -54,25 +55,13 @@ export default function AddUserModal() {
                                 <Label>Email</Label>
                                 <Input required name="email" placeholder={'Enter user email'}/>
                             </Field>
-                            <Field>
-                                <Label>Role</Label>
-                                <Input required name="role" placeholder={'Enter user role'}/>
-                            </Field>
-                            <Field>
-                                <Label>Title</Label>
-                                <Input required name="title" placeholder={'Enter user title'}/>
-                            </Field>
-                            <Field>
-                                <Label>Phone</Label>
-                                <Input required name="phone" placeholder={'Enter user phone'}/>
-                            </Field>
                         </div>
                     </DialogBody>
                     <DialogActions>
                         <Button plain onClick={() => setIsOpen(false)}>
                             Cancel
                         </Button>
-                        <AddButton/>
+                        <AddButton />
                     </DialogActions>
                 </form>
             </Dialog>

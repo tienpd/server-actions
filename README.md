@@ -14,6 +14,18 @@ pnpm dev
 bun dev
 ```
 
+First, we need to run prisma generate to generate the prisma client
+
+```bash
+npx prisma generate
+```
+
+To open the prisma studio, run the following command
+
+```bash
+npx prisma studio
+```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
